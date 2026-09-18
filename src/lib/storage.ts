@@ -14,6 +14,7 @@ const STORAGE_KEYS = {
   ACTIVE_CHAT_ID: 'ai_ashokra_active_chat_id',
   APPEARANCE_SETTINGS: 'ai_ashokra_appearance_settings',
   AI_MODEL_PREFERENCES: 'ai_ashokra_model_preferences',
+  MEMORY_SETTINGS: 'ai_ashokra_memory_settings',
 };
 
 const DEFAULT_USER: UserProfileData = {
@@ -361,5 +362,53 @@ export function resetStoredAIPreferences(): AIModelPreference[] {
     );
   } catch {}
   return DEFAULT_AI_MODEL_PREFERENCES;
+}
+
+// --- Memory Settings ---
+export interface MemorySettings {
+  isEnabled: boolean;
+  keyFacts: string[];
+  summary: string;
+  rememberedAutomatically: string[];
+}
+
+export const DEFAULT_MEMORY_SETTINGS: MemorySettings = {
+  isEnabled: false,
+  keyFacts: [],
+  summary: '',
+  rememberedAutomatically: [],
+};
+
+export function getStoredMemorySettings(): MemorySettings {
+  if (typeof window === 'undefined') return DEFAULT_MEMORY_SETTINGS;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.MEMORY_SETTINGS);
+    if (!raw) return DEFAULT_MEMORY_SETTINGS;
+    const parsed = JSON.parse(raw);
+    return {
+      isEnabled: Boolean(parsed.isEnabled),
+      keyFacts: Array.isArray(parsed.keyFacts) ? parsed.keyFacts : [],
+      summary: typeof parsed.summary === 'string' ? parsed.summary : '',
+      rememberedAutomatically: Array.isArray(parsed.rememberedAutomatically)
+        ? parsed.rememberedAutomatically
+        : [],
+    };
+  } catch (err) {
+    console.warn('Failed to parse stored memory settings:', err);
+    return DEFAULT_MEMORY_SETTINGS;
+  }
+}
+
+export function saveStoredMemorySettings(settings: Partial<MemorySettings>): MemorySettings {
+  if (typeof window === 'undefined') return DEFAULT_MEMORY_SETTINGS;
+  try {
+    const current = getStoredMemorySettings();
+    const updated: MemorySettings = { ...current, ...settings };
+    localStorage.setItem(STORAGE_KEYS.MEMORY_SETTINGS, JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.warn('Failed to save memory settings:', err);
+    return DEFAULT_MEMORY_SETTINGS;
+  }
 }
 

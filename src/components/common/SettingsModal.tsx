@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { UserProfileData } from '../../types';
 import { AIModelPreferencesView } from './AIModelPreferencesView';
+import { MemorySettingsView } from './MemorySettingsView';
 
 export type SettingsTab =
   | 'general'
@@ -233,21 +234,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="flex-1 flex flex-col p-6 overflow-hidden bg-white">
           {activeTab === 'preferences' ? (
             <AIModelPreferencesView onOpenUpgrade={onOpenUpgrade} onClose={onClose} />
+          ) : activeTab === 'memory' ? (
+            <MemorySettingsView onClose={onClose} />
           ) : (
             <>
-              {/* Header Row (for non-preferences tabs) */}
+              {/* Header Row (for non-preferences/non-memory tabs) */}
               <div className="flex items-start justify-between mb-5 select-none shrink-0">
                 <div>
                   <h3 className="text-base font-semibold text-neutral-900 leading-tight">
                     {activeTab === 'general' && 'General'}
-                    {activeTab === 'memory' && 'Memory'}
                     {activeTab === 'subscription' && 'Subscription'}
                     {activeTab === 'refer' && 'Refer & Earn'}
                     {activeTab === 'profile' && 'Profile'}
                   </h3>
                   <p className="text-xs text-neutral-500 mt-0.5">
                     {activeTab === 'general' && 'Make AI Ashokra look the way you like.'}
-                    {activeTab === 'memory' && 'Manage what AI remembers about you across conversations.'}
                     {activeTab === 'subscription' && 'Manage your plan, limits, and billing details.'}
                     {activeTab === 'refer' && 'Invite friends to earn additional message credits.'}
                     {activeTab === 'profile' && 'Manage your account details and display name.'}
@@ -399,23 +400,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       </button>
                     );
                   })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB CONTENT: Memory */}
-          {activeTab === 'memory' && (
-            <div className="space-y-4 animate-in fade-in duration-150 text-xs text-neutral-700">
-              <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200/70 space-y-2">
-                <span className="font-medium text-neutral-900 block">Personalized Context Memory</span>
-                <p className="text-neutral-500 text-[11px]">
-                  Memory allows AI Ashokra to remember your details, coding style, and preferences across sessions.
-                </p>
-                <div className="pt-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 font-medium rounded-full text-[11px]">
-                    ● Memory is active
-                  </span>
                 </div>
               </div>
             </div>

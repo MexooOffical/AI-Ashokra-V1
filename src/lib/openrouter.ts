@@ -1,5 +1,6 @@
 // Client side service for OpenRouter API streaming and non-streaming calls
 import { OPENROUTER_MODEL_IDS } from '../data/models';
+import { getStoredMemorySettings } from './storage';
 
 export interface StreamCallbacks {
   onChunk: (chunk: string) => void;
@@ -34,11 +35,23 @@ export async function streamOpenRouterChat(
     targetModel = OPENROUTER_MODEL_IDS[modelId];
   }
 
+  const memory = getStoredMemorySettings();
+  let memoryContext = '';
+  if (memory.isEnabled) {
+    if (memory.summary) {
+      memoryContext += `\n\nUser Profile & Memory Context:\n${memory.summary}`;
+    }
+    if (memory.keyFacts.length > 0) {
+      memoryContext += `\n\nKey user facts across chats:\n${memory.keyFacts.map((f) => `- ${f}`).join('\n')}`;
+    }
+  }
+
   const messages = [
     {
       role: 'system',
       content:
-        'You are AI Ashokra, an intelligent, helpful, and highly articulate AI assistant. Format your responses with high professional rigor using GitHub-flavored Markdown. When presenting comparative data, structured lists, or metrics, format them as clean Markdown tables with header rows and dividers. Use bold text for key concepts, bullet lists for enumerations, and syntax-highlighted code blocks where applicable. Ensure your Markdown formatting is clean, readable, and properly closed.',
+        'You are AI Ashokra, an intelligent, helpful, and highly articulate AI assistant. Format your responses with high professional rigor using GitHub-flavored Markdown. When presenting comparative data, structured lists, or metrics, format them as clean Markdown tables with header rows and dividers. Use bold text for key concepts, bullet lists for enumerations, and syntax-highlighted code blocks where applicable. Ensure your Markdown formatting is clean, readable, and properly closed.' +
+        memoryContext,
     },
     ...history,
     { role: 'user', content: prompt },
