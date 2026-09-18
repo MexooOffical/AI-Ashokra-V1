@@ -14,6 +14,7 @@ interface SidebarProps {
   onOpenFirebase?: () => void;
   onOpenPromptBook?: () => void;
   onOpenSettings?: () => void;
+  onOpenLogoutConfirm?: () => void;
   user: UserProfileData;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
@@ -32,6 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenFirebase,
   onOpenPromptBook,
   onOpenSettings,
+  onOpenLogoutConfirm,
   user,
   isMobileOpen,
   onCloseMobile,
@@ -86,6 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onOpenFirebase={onOpenFirebase}
           onOpenPromptBook={onOpenPromptBook}
           onOpenSettings={onOpenSettings}
+          onOpenLogoutConfirm={onOpenLogoutConfirm}
         />
       </aside>
     </>

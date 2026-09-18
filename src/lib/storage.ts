@@ -15,7 +15,64 @@ const STORAGE_KEYS = {
   APPEARANCE_SETTINGS: 'ai_ashokra_appearance_settings',
   AI_MODEL_PREFERENCES: 'ai_ashokra_model_preferences',
   MEMORY_SETTINGS: 'ai_ashokra_memory_settings',
+  AUTH_SESSION: 'ai_ashokra_auth_session',
 };
+
+export interface AuthSession {
+  isLoggedIn: boolean;
+  email?: string;
+  name?: string;
+  phone?: string;
+  provider?: 'google' | 'email';
+}
+
+export const DEFAULT_AUTH_SESSION: AuthSession = {
+  isLoggedIn: false,
+  email: '',
+  name: '',
+  phone: '',
+};
+
+export function getStoredAuthSession(): AuthSession {
+  if (typeof window === 'undefined') return DEFAULT_AUTH_SESSION;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.AUTH_SESSION);
+    if (!raw) return DEFAULT_AUTH_SESSION;
+    const parsed = JSON.parse(raw);
+    return {
+      isLoggedIn: Boolean(parsed.isLoggedIn),
+      email: typeof parsed.email === 'string' ? parsed.email : '',
+      name: typeof parsed.name === 'string' ? parsed.name : '',
+      phone: typeof parsed.phone === 'string' ? parsed.phone : '',
+      provider: parsed.provider || 'email',
+    };
+  } catch (err) {
+    console.warn('Failed to parse auth session:', err);
+    return DEFAULT_AUTH_SESSION;
+  }
+}
+
+export function saveStoredAuthSession(session: Partial<AuthSession>): AuthSession {
+  if (typeof window === 'undefined') return DEFAULT_AUTH_SESSION;
+  try {
+    const current = getStoredAuthSession();
+    const updated: AuthSession = { ...current, ...session };
+    localStorage.setItem(STORAGE_KEYS.AUTH_SESSION, JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.warn('Failed to save auth session:', err);
+    return DEFAULT_AUTH_SESSION;
+  }
+}
+
+export function clearStoredAuthSession(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
+  } catch (err) {
+    console.warn('Failed to clear auth session:', err);
+  }
+}
 
 const DEFAULT_USER: UserProfileData = {
   name: 'Spectar',

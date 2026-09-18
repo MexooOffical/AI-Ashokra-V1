@@ -11,6 +11,7 @@ import {
   Sun,
   Moon,
   Check,
+  LogOut,
 } from 'lucide-react';
 import { UserProfileData } from '../../types';
 import { AIModelPreferencesView } from './AIModelPreferencesView';
@@ -31,6 +32,7 @@ interface SettingsModalProps {
   onUpdateUser?: (updated: Partial<UserProfileData>) => void;
   initialTab?: SettingsTab;
   onOpenUpgrade?: () => void;
+  onOpenLogoutConfirm?: () => void;
 }
 
 export const ACCENT_COLORS = [
@@ -129,21 +131,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     >
       <div
         id="settings-modal-card"
-        className="bg-white rounded-[26px] shadow-2xl w-full max-w-[840px] h-[600px] max-h-[92vh] flex overflow-hidden border border-neutral-200/80 animate-in zoom-in-95 duration-200"
+        className="bg-white rounded-[26px] shadow-2xl w-full max-w-[840px] h-[640px] max-h-[92vh] flex flex-col md:flex-row overflow-hidden border border-neutral-200/80 animate-in zoom-in-95 duration-200"
       >
         {/* Left Navigation Sidebar */}
-        <div className="w-[220px] shrink-0 border-r border-neutral-100 flex flex-col p-4 bg-white select-none">
-          <h2 className="text-[17px] font-semibold text-neutral-900 px-3 pt-1 pb-4">
-            Settings
-          </h2>
+        <div className="w-full md:w-[220px] shrink-0 border-b md:border-b-0 md:border-r border-neutral-100 flex flex-col p-3 md:p-4 bg-white select-none">
+          <div className="flex items-center justify-between px-2 md:px-3 pt-1 pb-2 md:pb-4">
+            <h2 className="text-[16px] md:text-[17px] font-semibold text-neutral-900">
+              Settings
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              className="md:hidden p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
-          <nav className="space-y-1">
+          <nav className="flex md:flex-col gap-1 overflow-x-auto no-scrollbar md:overflow-visible pb-1 md:pb-0 md:space-y-1">
             {/* General */}
             <button
               type="button"
               id="settings-nav-general"
               onClick={() => setActiveTab('general')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-medium transition-colors cursor-pointer text-left ${
+              className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-2xl text-[12px] md:text-[13px] font-medium transition-colors cursor-pointer whitespace-nowrap text-left shrink-0 md:w-full ${
                 activeTab === 'general'
                   ? 'bg-[#ececec] text-neutral-900'
                   : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
@@ -158,7 +169,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               type="button"
               id="settings-nav-preferences"
               onClick={() => setActiveTab('preferences')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-normal transition-colors cursor-pointer text-left ${
+              className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-2xl text-[12px] md:text-[13px] font-normal transition-colors cursor-pointer whitespace-nowrap text-left shrink-0 md:w-full ${
                 activeTab === 'preferences'
                   ? 'bg-[#ececec] text-neutral-900 font-medium'
                   : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
@@ -173,7 +184,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               type="button"
               id="settings-nav-memory"
               onClick={() => setActiveTab('memory')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-normal transition-colors cursor-pointer text-left ${
+              className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-2xl text-[12px] md:text-[13px] font-normal transition-colors cursor-pointer whitespace-nowrap text-left shrink-0 md:w-full ${
                 activeTab === 'memory'
                   ? 'bg-[#ececec] text-neutral-900 font-medium'
                   : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
@@ -188,7 +199,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               type="button"
               id="settings-nav-subscription"
               onClick={() => setActiveTab('subscription')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-normal transition-colors cursor-pointer text-left ${
+              className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-2xl text-[12px] md:text-[13px] font-normal transition-colors cursor-pointer whitespace-nowrap text-left shrink-0 md:w-full ${
                 activeTab === 'subscription'
                   ? 'bg-[#ececec] text-neutral-900 font-medium'
                   : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
@@ -203,7 +214,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               type="button"
               id="settings-nav-refer"
               onClick={() => setActiveTab('refer')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-normal transition-colors cursor-pointer text-left ${
+              className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-2xl text-[12px] md:text-[13px] font-normal transition-colors cursor-pointer whitespace-nowrap text-left shrink-0 md:w-full ${
                 activeTab === 'refer'
                   ? 'bg-[#ececec] text-neutral-900 font-medium'
                   : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
@@ -218,7 +229,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               type="button"
               id="settings-nav-profile"
               onClick={() => setActiveTab('profile')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-normal transition-colors cursor-pointer text-left ${
+              className={`flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-2xl text-[12px] md:text-[13px] font-normal transition-colors cursor-pointer whitespace-nowrap text-left shrink-0 md:w-full ${
                 activeTab === 'profile'
                   ? 'bg-[#ececec] text-neutral-900 font-medium'
                   : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
@@ -228,10 +239,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <span>Profile</span>
             </button>
           </nav>
+
+          {/* Logout Action at bottom of Left Sidebar */}
+          <div className="pt-2 md:pt-3 border-t border-neutral-100 mt-1 md:mt-auto">
+            <button
+              type="button"
+              id="settings-nav-logout"
+              onClick={() => onOpenLogoutConfirm?.()}
+              className="w-full flex items-center gap-2.5 md:gap-3 px-3 py-2 md:py-2.5 rounded-2xl text-[12px] md:text-[13px] font-medium text-neutral-600 hover:text-red-600 hover:bg-red-50/70 transition-colors cursor-pointer text-left group"
+            >
+              <LogOut className="w-4 h-4 stroke-[1.8] text-neutral-400 group-hover:text-red-500 shrink-0 transition-colors" />
+              <span>Log out</span>
+            </button>
+          </div>
         </div>
 
         {/* Right Content Area */}
-        <div className="flex-1 flex flex-col p-6 overflow-hidden bg-white">
+        <div className="flex-1 flex flex-col p-4 md:p-6 overflow-hidden bg-white">
           {activeTab === 'preferences' ? (
             <AIModelPreferencesView onOpenUpgrade={onOpenUpgrade} onClose={onClose} />
           ) : activeTab === 'memory' ? (
@@ -479,6 +503,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     className="w-20 bg-white border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900 text-center font-bold"
                   />
                 </div>
+              </div>
+
+              {/* Account Sign out */}
+              <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200/70 flex items-center justify-between">
+                <div>
+                  <span className="font-medium text-neutral-900 block text-xs">Account Session</span>
+                  <span className="text-[11px] text-neutral-500">Sign out of this browser or switch account</span>
+                </div>
+                <button
+                  type="button"
+                  id="settings-profile-logout-btn"
+                  onClick={() => onOpenLogoutConfirm?.()}
+                  className="px-3.5 py-2 rounded-xl bg-white hover:bg-neutral-100 border border-neutral-200/80 text-red-600 font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                >
+                  <LogOut className="w-3.5 h-3.5 stroke-[2]" />
+                  <span>Log out</span>
+                </button>
               </div>
             </div>
           )}

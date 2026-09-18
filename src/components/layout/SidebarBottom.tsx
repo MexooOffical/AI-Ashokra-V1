@@ -18,6 +18,7 @@ interface SidebarBottomProps {
   onOpenFirebase?: () => void;
   onOpenPromptBook?: () => void;
   onOpenSettings?: () => void;
+  onOpenLogoutConfirm?: () => void;
 }
 
 export const SidebarBottom: React.FC<SidebarBottomProps> = ({
@@ -27,6 +28,7 @@ export const SidebarBottom: React.FC<SidebarBottomProps> = ({
   onOpenFirebase,
   onOpenPromptBook,
   onOpenSettings,
+  onOpenLogoutConfirm,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -173,7 +175,10 @@ export const SidebarBottom: React.FC<SidebarBottomProps> = ({
                   {/* Logout */}
                   <button
                     type="button"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onOpenLogoutConfirm?.();
+                    }}
                     className="w-full flex items-center gap-3 py-2 px-1 text-left text-red-500 hover:text-red-600 transition-colors cursor-pointer font-normal"
                   >
                     <LogOut className="w-4 h-4 stroke-[1.8]" />

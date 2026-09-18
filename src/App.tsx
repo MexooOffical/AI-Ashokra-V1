@@ -12,6 +12,8 @@ import { SearchModal } from './components/common/SearchModal';
 import { UpgradeModal } from './components/common/UpgradeModal';
 import { PromptBookModal } from './components/common/PromptBookModal';
 import { SettingsModal } from './components/common/SettingsModal';
+import { AuthPage } from './components/auth/AuthPage';
+import { LogoutConfirmModal } from './components/auth/LogoutConfirmModal';
 import { NavItemId, UserProfileData, ChatMessage, ChatSession, PromptMode } from './types';
 import {
   getStoredUserProfile,
@@ -20,10 +22,16 @@ import {
   saveStoredChatSessions,
   getStoredActiveChatId,
   saveStoredActiveChatId,
+  getStoredAuthSession,
+  saveStoredAuthSession,
+  clearStoredAuthSession,
+  AuthSession,
 } from './lib/storage';
 import { streamOpenRouterChat } from './lib/openrouter';
 
 export default function App() {
+  const [authSession, setAuthSession] = useState<AuthSession>(() => getStoredAuthSession());
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [activeNavId, setActiveNavId] = useState<NavItemId>('new-chat');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -33,6 +41,38 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [savedPromptsCount, setSavedPromptsCount] = useState(0);
   const isInitialUserMount = useRef(true);
+
+  // Authentication handlers
+  const handleAuthSuccess = (session: {
+    email: string;
+    name?: string;
+    phone?: string;
+    provider?: 'google' | 'email';
+  }) => {
+    const updated: AuthSession = {
+      isLoggedIn: true,
+      email: session.email,
+      name: session.name || 'Spectar',
+      phone: session.phone || '',
+      provider: session.provider || 'email',
+    };
+    saveStoredAuthSession(updated);
+    setAuthSession(updated);
+    if (session.name) {
+      setUser((prev) => ({
+        ...prev,
+        name: session.name || prev.name,
+        avatarLetter: (session.name || 'S').charAt(0).toUpperCase(),
+      }));
+    }
+  };
+
+  const handleConfirmLogout = () => {
+    clearStoredAuthSession();
+    setAuthSession({ isLoggedIn: false, email: '', name: '', phone: '' });
+    setIsLogoutConfirmOpen(false);
+    setIsSettingsOpen(false);
+  };
 
   // Chat sessions state backed by localStorage
   const [chatSessions, setChatSessions] = useState<ChatSession[]>(() => getStoredChatSessions());
@@ -351,6 +391,11 @@ export default function App() {
     setActiveNavId('new-chat');
   };
 
+  // If user is not authenticated, show Auth Page first (matching Image 2 & 3)
+  if (!authSession.isLoggedIn) {
+    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#fafaf9] text-neutral-900 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Mobile Header Bar */}
@@ -408,6 +453,7 @@ export default function App() {
           onOpenUpgrade={() => setIsUpgradeOpen(true)}
           onOpenPromptBook={() => setIsPromptBookOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenLogoutConfirm={() => setIsLogoutConfirmOpen(true)}
           user={user}
           isMobileOpen={isMobileSidebarOpen}
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
