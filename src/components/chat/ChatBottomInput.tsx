@@ -107,6 +107,7 @@ export const ChatBottomInput: React.FC<ChatBottomInputProps> = ({
                     key={m.id}
                     src={m.logo}
                     alt={m.name}
+                    referrerPolicy="no-referrer"
                     className="w-3.5 h-3.5 object-contain"
                   />
                 ))}

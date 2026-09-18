@@ -44,49 +44,49 @@ export const FONT_OPTIONS = [
   {
     id: 'google-sans',
     name: 'Google Sans Flex',
-    subtitle: 'Ask AI Fiesta anything',
+    subtitle: 'Ask AI Ashokra anything',
     fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
   },
   {
     id: 'figtree',
     name: 'Figtree',
-    subtitle: 'Ask AI Fiesta anything',
+    subtitle: 'Ask AI Ashokra anything',
     fontFamily: "'Figtree', system-ui, sans-serif",
   },
   {
     id: 'geist',
     name: 'Geist',
-    subtitle: 'Ask AI Fiesta anything',
+    subtitle: 'Ask AI Ashokra anything',
     fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
   },
   {
     id: 'instrument-sans',
     name: 'Instrument Sans',
-    subtitle: 'Ask AI Fiesta anything',
+    subtitle: 'Ask AI Ashokra anything',
     fontFamily: "'Instrument Sans', system-ui, sans-serif",
   },
   {
     id: 'jetbrains-mono',
     name: 'JetBrains Mono',
-    subtitle: 'Ask AI Fiesta anything',
+    subtitle: 'Ask AI Ashokra anything',
     fontFamily: "'JetBrains Mono', monospace",
   },
   {
     id: 'ibm-plex-sans',
     name: 'IBM Plex Sans',
-    subtitle: 'Ask AI Fiesta anything',
+    subtitle: 'Ask AI Ashokra anything',
     fontFamily: "'IBM Plex Sans', sans-serif",
   },
   {
     id: 'source-serif',
     name: 'Source Serif',
-    subtitle: 'Ask AI Fiesta anything',
+    subtitle: 'Ask AI Ashokra anything',
     fontFamily: "'Source Serif 4', Georgia, serif",
   },
   {
     id: 'system',
     name: 'System (SF Pro)',
-    subtitle: 'Ask AI Fiesta anything',
+    subtitle: 'Ask AI Ashokra anything',
     fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif",
   },
 ];
@@ -246,7 +246,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {activeTab === 'profile' && 'Profile'}
                   </h3>
                   <p className="text-xs text-neutral-500 mt-0.5">
-                    {activeTab === 'general' && 'Make AI Fiesta look the way you like.'}
+                    {activeTab === 'general' && 'Make AI Ashokra look the way you like.'}
                     {activeTab === 'memory' && 'Manage what AI remembers about you across conversations.'}
                     {activeTab === 'subscription' && 'Manage your plan, limits, and billing details.'}
                     {activeTab === 'refer' && 'Invite friends to earn additional message credits.'}

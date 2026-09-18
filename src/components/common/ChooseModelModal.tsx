@@ -305,6 +305,7 @@ export const ChooseModelModal: React.FC<ChooseModelModalProps> = ({
                     <img
                       src={model.logo}
                       alt={model.name}
+                      referrerPolicy="no-referrer"
                       className="w-6 h-6 object-contain"
                       onError={(e) => {
                         const target = e.currentTarget;

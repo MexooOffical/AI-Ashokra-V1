@@ -153,7 +153,7 @@ export const AIModelPreferencesView: React.FC<AIModelPreferencesViewProps> = ({
             AI model preferences
           </h3>
           <p className="text-xs text-neutral-500 mt-0.5">
-            Make AI Fiesta look the way you like.
+            Make AI Ashokra look the way you like.
           </p>
         </div>
 

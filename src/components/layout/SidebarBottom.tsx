@@ -140,7 +140,7 @@ export const SidebarBottom: React.FC<SidebarBottomProps> = ({
                   {/* Divider */}
                   <div className="border-t border-neutral-100 my-1" />
 
-                  {/* How to use AI Fiesta / Ashokra */}
+                  {/* How to use AI Ashokra */}
                   <button
                     type="button"
                     onClick={() => setIsMenuOpen(false)}

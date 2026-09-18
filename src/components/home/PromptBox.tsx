@@ -303,6 +303,7 @@ export const PromptBox: React.FC<PromptBoxProps> = ({
                     <img
                       src={m.logo}
                       alt={m.name}
+                      referrerPolicy="no-referrer"
                       className="w-3.5 h-3.5 object-contain"
                     />
                   </div>
