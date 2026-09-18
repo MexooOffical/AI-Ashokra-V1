@@ -16,6 +16,7 @@ interface SidebarBottomProps {
   isCollapsed: boolean;
   onUpgradeClick: () => void;
   onOpenFirebase?: () => void;
+  onOpenPromptBook?: () => void;
   onOpenSettings?: () => void;
 }
 
@@ -24,6 +25,7 @@ export const SidebarBottom: React.FC<SidebarBottomProps> = ({
   isCollapsed,
   onUpgradeClick,
   onOpenFirebase,
+  onOpenPromptBook,
   onOpenSettings,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -153,7 +155,11 @@ export const SidebarBottom: React.FC<SidebarBottomProps> = ({
                     type="button"
                     onClick={() => {
                       setIsMenuOpen(false);
-                      onOpenFirebase?.();
+                      if (onOpenPromptBook) {
+                        onOpenPromptBook();
+                      } else {
+                        onOpenFirebase?.();
+                      }
                     }}
                     className="w-full flex items-center gap-3 py-2 px-1 text-left hover:text-neutral-900 transition-colors cursor-pointer"
                   >

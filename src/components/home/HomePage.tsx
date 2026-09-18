@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Database, Sparkles } from 'lucide-react';
+import { Sparkles, Terminal } from 'lucide-react';
 import { WelcomeSection } from './WelcomeSection';
 import { PromptBox } from './PromptBox';
 import { QuickActions } from './QuickActions';
 import { PromptMode, QuickAction } from '../../types';
-import { savePrompt, getRecentPrompts, FIRESTORE_CONSOLE_URL } from '../../lib/firebase';
+import { saveStoredPrompt, getStoredPrompts } from '../../lib/storage';
 
 interface HomePageProps {
   userName?: string;
   onNavigateTo?: (section: string) => void;
   onPromptSaved?: (count: number) => void;
   onOpenFirebaseModal?: () => void;
+  onOpenPromptBook?: () => void;
   onOpenUpgradeModal?: () => void;
   onStartChat?: (prompt: string, mode: PromptMode, selectedModels?: string[]) => void;
 }
@@ -19,6 +20,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   userName = 'Spectar',
   onPromptSaved,
   onOpenFirebaseModal,
+  onOpenPromptBook,
   onOpenUpgradeModal,
   onStartChat,
 }) => {
@@ -26,30 +28,22 @@ export const HomePage: React.FC<HomePageProps> = ({
   const [promptText, setPromptText] = useState('');
   const [activeNotification, setActiveNotification] = useState<{
     msg: string;
-    isFirebase?: boolean;
-    docId?: string;
+    hasPromptBook?: boolean;
   } | null>(null);
   const [savedCount, setSavedCount] = useState(0);
 
-  // Initial fetch of saved prompts from Firebase Firestore
+  // Initial fetch of saved prompts from Local Storage
   useEffect(() => {
-    let isMounted = true;
-    getRecentPrompts(10).then((prompts) => {
-      if (isMounted) {
-        setSavedCount(prompts.length);
-        onPromptSaved?.(prompts.length);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
+    const prompts = getStoredPrompts(10);
+    setSavedCount(prompts.length);
+    onPromptSaved?.(prompts.length);
   }, [onPromptSaved]);
 
-  const showNotification = (msg: string, isFirebase = false, docId?: string) => {
-    setActiveNotification({ msg, isFirebase, docId });
+  const showNotification = (msg: string, hasPromptBook = false) => {
+    setActiveNotification({ msg, hasPromptBook });
     setTimeout(() => {
       setActiveNotification((current) => (current?.msg === msg ? null : current));
-    }, 4500);
+    }, 4000);
   };
 
   const handlePromptSubmit = async (
@@ -57,8 +51,13 @@ export const HomePage: React.FC<HomePageProps> = ({
     mode: PromptMode,
     selectedModels?: string[]
   ) => {
-    // Save to Cloud Firestore
-    savePrompt(prompt, mode).catch(() => {});
+    // Save to Local Storage
+    try {
+      saveStoredPrompt(prompt, mode);
+      const updated = getStoredPrompts(10);
+      setSavedCount(updated.length);
+      onPromptSaved?.(updated.length);
+    } catch {}
 
     // Delegate immediately to chat conversation stream
     if (onStartChat) {
@@ -106,20 +105,25 @@ export const HomePage: React.FC<HomePageProps> = ({
         <QuickActions onActionSelect={handleQuickAction} />
       </div>
 
-      {/* Floating notification for prompt actions and Firebase sync */}
+      {/* Floating notification for prompt actions */}
       {activeNotification && (
         <div className="fixed bottom-6 right-6 z-50 bg-neutral-900 text-white text-xs font-medium py-2.5 px-4 rounded-xl shadow-lg border border-neutral-800 animate-in fade-in slide-in-from-bottom-3 duration-200 flex items-center gap-2.5">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
           <span>{activeNotification.msg}</span>
 
-          {activeNotification.isFirebase && (
+          {activeNotification.hasPromptBook && (
             <button
               type="button"
-              onClick={onOpenFirebaseModal}
+              onClick={() => {
+                if (onOpenPromptBook) {
+                  onOpenPromptBook();
+                } else {
+                  onOpenFirebaseModal?.();
+                }
+              }}
               className="ml-1 text-emerald-300 hover:text-emerald-200 underline font-normal flex items-center gap-1 cursor-pointer"
             >
-              <span>View in Console</span>
-              <ExternalLink className="w-3 h-3" />
+              <span>PromptBook</span>
             </button>
           )}
         </div>

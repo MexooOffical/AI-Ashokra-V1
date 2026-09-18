@@ -12,6 +12,7 @@ interface SidebarProps {
   onOpenSearch: () => void;
   onOpenUpgrade: () => void;
   onOpenFirebase?: () => void;
+  onOpenPromptBook?: () => void;
   onOpenSettings?: () => void;
   user: UserProfileData;
   isMobileOpen: boolean;
@@ -29,6 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenSearch,
   onOpenUpgrade,
   onOpenFirebase,
+  onOpenPromptBook,
   onOpenSettings,
   user,
   isMobileOpen,
@@ -82,6 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isCollapsed={isCollapsed}
           onUpgradeClick={onOpenUpgrade}
           onOpenFirebase={onOpenFirebase}
+          onOpenPromptBook={onOpenPromptBook}
           onOpenSettings={onOpenSettings}
         />
       </aside>

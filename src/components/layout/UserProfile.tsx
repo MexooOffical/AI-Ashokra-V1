@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronUp, Settings, LogOut, Sparkles, SlidersHorizontal, ShieldCheck, Flame } from 'lucide-react';
+import { ChevronUp, Settings, LogOut, Sparkles, SlidersHorizontal, ShieldCheck, Terminal } from 'lucide-react';
 import { UserProfileData } from '../../types';
 
 interface UserProfileProps {
@@ -7,6 +7,7 @@ interface UserProfileProps {
   isCollapsed: boolean;
   onOpenUpgrade?: () => void;
   onOpenFirebase?: () => void;
+  onOpenPromptBook?: () => void;
   onOpenSettings?: () => void;
 }
 
@@ -15,6 +16,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   isCollapsed,
   onOpenUpgrade,
   onOpenFirebase,
+  onOpenPromptBook,
   onOpenSettings,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,12 +55,16 @@ export const UserProfile: React.FC<UserProfileProps> = ({
               type="button"
               onClick={() => {
                 setIsOpen(false);
-                onOpenFirebase?.();
+                if (onOpenPromptBook) {
+                  onOpenPromptBook();
+                } else {
+                  onOpenFirebase?.();
+                }
               }}
               className="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs sm:text-[13px] text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 rounded-xl transition-colors cursor-pointer"
             >
-              <Flame className="w-4 h-4 text-amber-500" />
-              <span>Firebase Database</span>
+              <Terminal className="w-4 h-4 text-neutral-600" />
+              <span>PromptBook</span>
             </button>
             <button
               type="button"
