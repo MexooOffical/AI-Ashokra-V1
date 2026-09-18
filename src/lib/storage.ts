@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
   SAVED_PROMPTS: 'ai_ashokra_saved_prompts',
   ACTIVE_CHAT_ID: 'ai_ashokra_active_chat_id',
   APPEARANCE_SETTINGS: 'ai_ashokra_appearance_settings',
+  AI_MODEL_PREFERENCES: 'ai_ashokra_model_preferences',
 };
 
 const DEFAULT_USER: UserProfileData = {
@@ -143,3 +144,222 @@ export function clearStoredPrompts(): void {
     localStorage.removeItem(STORAGE_KEYS.SAVED_PROMPTS);
   } catch {}
 }
+
+// --- AI Model Preferences (Settings -> AI Preferences) ---
+export interface AIModelPreference {
+  id: string;
+  provider: string;
+  selectedModel: string;
+  availableModels: string[];
+  isEnabled: boolean;
+  isLocked: boolean;
+  isPro?: boolean;
+  type: 'text' | 'image';
+  iconType: string;
+}
+
+export const DEFAULT_AI_MODEL_PREFERENCES: AIModelPreference[] = [
+  {
+    id: 'openai',
+    provider: 'OpenAI',
+    selectedModel: 'GPT-5.4 nano',
+    availableModels: [
+      'GPT-5.4 nano',
+      'GPT-5.4 mini',
+      'GPT-4o',
+      'GPT-4o mini',
+      'o1',
+      'o3-mini',
+    ],
+    isEnabled: true,
+    isLocked: false,
+    isPro: false,
+    type: 'text',
+    iconType: 'openai',
+  },
+  {
+    id: 'google',
+    provider: 'Google',
+    selectedModel: 'Gemini 3.1 Flash Lite',
+    availableModels: [
+      'Gemini 3.1 Flash Lite',
+      'Gemini 2.5 Pro',
+      'Gemini 2.0 Flash',
+      'Gemini 2.0 Flash Thinking',
+    ],
+    isEnabled: true,
+    isLocked: false,
+    isPro: false,
+    type: 'text',
+    iconType: 'google',
+  },
+  {
+    id: 'deepseek',
+    provider: 'DeepSeek',
+    selectedModel: 'DeepSeek Chat',
+    availableModels: [
+      'DeepSeek Chat',
+      'DeepSeek V3',
+      'DeepSeek R1',
+      'DeepSeek Coder',
+    ],
+    isEnabled: true,
+    isLocked: false,
+    isPro: false,
+    type: 'text',
+    iconType: 'deepseek',
+  },
+  {
+    id: 'perplexity',
+    provider: 'Perplexity',
+    selectedModel: 'Perplexity Sonar',
+    availableModels: [
+      'Perplexity Sonar',
+      'Sonar Pro',
+      'Sonar Reasoning Pro',
+      'Sonar Deep Research',
+    ],
+    isEnabled: false,
+    isLocked: true,
+    isPro: true,
+    type: 'text',
+    iconType: 'perplexity',
+  },
+  {
+    id: 'anthropic',
+    provider: 'Anthropic',
+    selectedModel: 'Claude Haiku 4.5',
+    availableModels: [
+      'Claude Haiku 4.5',
+      'Claude 3.7 Sonnet',
+      'Claude 3.5 Sonnet',
+      'Claude 3.5 Haiku',
+      'Claude Opus 4',
+    ],
+    isEnabled: false,
+    isLocked: true,
+    isPro: true,
+    type: 'text',
+    iconType: 'anthropic',
+  },
+  {
+    id: 'xai',
+    provider: 'xAI',
+    selectedModel: 'Grok 3 Mini',
+    availableModels: ['Grok 3 Mini', 'Grok 3', 'Grok 2', 'Grok 2 Vision'],
+    isEnabled: false,
+    isLocked: true,
+    isPro: true,
+    type: 'text',
+    iconType: 'xai',
+  },
+  {
+    id: 'mistral',
+    provider: 'Mistral AI',
+    selectedModel: 'Mistral Large 2',
+    availableModels: [
+      'Mistral Large 2',
+      'Mistral Small 3',
+      'Codestral 25.01',
+      'Pixtral Large',
+    ],
+    isEnabled: false,
+    isLocked: true,
+    isPro: true,
+    type: 'text',
+    iconType: 'mistral',
+  },
+  {
+    id: 'meta',
+    provider: 'Meta Llama',
+    selectedModel: 'Llama 3.3 70B',
+    availableModels: ['Llama 3.3 70B', 'Llama 3.1 405B', 'Llama 3.2 11B Vision'],
+    isEnabled: true,
+    isLocked: false,
+    isPro: false,
+    type: 'text',
+    iconType: 'meta',
+  },
+  // Image Models
+  {
+    id: 'flux',
+    provider: 'Black Forest Labs',
+    selectedModel: 'FLUX.1 Pro',
+    availableModels: ['FLUX.1 Pro', 'FLUX.1 Dev', 'FLUX.1 Schnell'],
+    isEnabled: true,
+    isLocked: false,
+    isPro: false,
+    type: 'image',
+    iconType: 'openai',
+  },
+  {
+    id: 'midjourney',
+    provider: 'Midjourney',
+    selectedModel: 'Midjourney v6.1',
+    availableModels: ['Midjourney v6.1', 'Midjourney v6.0', 'Niji 6'],
+    isEnabled: true,
+    isLocked: false,
+    isPro: false,
+    type: 'image',
+    iconType: 'deepseek',
+  },
+  {
+    id: 'dalle',
+    provider: 'OpenAI DALL·E',
+    selectedModel: 'DALL·E 3 HD',
+    availableModels: ['DALL·E 3 HD', 'DALL·E 3 Standard', 'DALL·E 2'],
+    isEnabled: false,
+    isLocked: true,
+    isPro: true,
+    type: 'image',
+    iconType: 'openai',
+  },
+  {
+    id: 'imagen',
+    provider: 'Google Imagen',
+    selectedModel: 'Imagen 3 Fast',
+    availableModels: ['Imagen 3 Fast', 'Imagen 3 High Quality'],
+    isEnabled: true,
+    isLocked: false,
+    isPro: false,
+    type: 'image',
+    iconType: 'google',
+  },
+];
+
+export function getStoredAIPreferences(): AIModelPreference[] {
+  if (typeof window === 'undefined') return DEFAULT_AI_MODEL_PREFERENCES;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.AI_MODEL_PREFERENCES);
+    if (!raw) return DEFAULT_AI_MODEL_PREFERENCES;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
+    }
+    return DEFAULT_AI_MODEL_PREFERENCES;
+  } catch (err) {
+    console.warn('Failed to parse stored AI model preferences:', err);
+    return DEFAULT_AI_MODEL_PREFERENCES;
+  }
+}
+
+export function saveStoredAIPreferences(preferences: AIModelPreference[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEYS.AI_MODEL_PREFERENCES, JSON.stringify(preferences));
+  } catch (err) {
+    console.warn('Failed to save AI model preferences:', err);
+  }
+}
+
+export function resetStoredAIPreferences(): AIModelPreference[] {
+  if (typeof window === 'undefined') return DEFAULT_AI_MODEL_PREFERENCES;
+  try {
+    localStorage.setItem(
+      STORAGE_KEYS.AI_MODEL_PREFERENCES,
+      JSON.stringify(DEFAULT_AI_MODEL_PREFERENCES)
+    );
+  } catch {}
+  return DEFAULT_AI_MODEL_PREFERENCES;
+}
+

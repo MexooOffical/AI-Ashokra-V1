@@ -13,6 +13,7 @@ import {
   Check,
 } from 'lucide-react';
 import { UserProfileData } from '../../types';
+import { AIModelPreferencesView } from './AIModelPreferencesView';
 
 export type SettingsTab =
   | 'general'
@@ -127,7 +128,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     >
       <div
         id="settings-modal-card"
-        className="bg-white rounded-[26px] shadow-2xl w-full max-w-[760px] h-[540px] max-h-[90vh] flex overflow-hidden border border-neutral-200/80 animate-in zoom-in-95 duration-200"
+        className="bg-white rounded-[26px] shadow-2xl w-full max-w-[840px] h-[600px] max-h-[92vh] flex overflow-hidden border border-neutral-200/80 animate-in zoom-in-95 duration-200"
       >
         {/* Left Navigation Sidebar */}
         <div className="w-[220px] shrink-0 border-r border-neutral-100 flex flex-col p-4 bg-white select-none">
@@ -229,38 +230,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Right Content Area */}
-        <div className="flex-1 flex flex-col p-6 overflow-y-auto bg-white">
-          {/* Header Row */}
-          <div className="flex items-start justify-between mb-5">
-            <div>
-              <h3 className="text-base font-semibold text-neutral-900 leading-tight">
-                {activeTab === 'general' && 'General'}
-                {activeTab === 'preferences' && 'AI Preferences'}
-                {activeTab === 'memory' && 'Memory'}
-                {activeTab === 'subscription' && 'Subscription'}
-                {activeTab === 'refer' && 'Refer & Earn'}
-                {activeTab === 'profile' && 'Profile'}
-              </h3>
-              <p className="text-xs text-neutral-500 mt-0.5">
-                {activeTab === 'general' && 'Make AI Fiesta look the way you like.'}
-                {activeTab === 'preferences' && 'Configure AI model behavior, system instructions, and response style.'}
-                {activeTab === 'memory' && 'Manage what AI remembers about you across conversations.'}
-                {activeTab === 'subscription' && 'Manage your plan, limits, and billing details.'}
-                {activeTab === 'refer' && 'Invite friends to earn additional message credits.'}
-                {activeTab === 'profile' && 'Manage your account details and display name.'}
-              </p>
-            </div>
+        <div className="flex-1 flex flex-col p-6 overflow-hidden bg-white">
+          {activeTab === 'preferences' ? (
+            <AIModelPreferencesView onOpenUpgrade={onOpenUpgrade} onClose={onClose} />
+          ) : (
+            <>
+              {/* Header Row (for non-preferences tabs) */}
+              <div className="flex items-start justify-between mb-5 select-none shrink-0">
+                <div>
+                  <h3 className="text-base font-semibold text-neutral-900 leading-tight">
+                    {activeTab === 'general' && 'General'}
+                    {activeTab === 'memory' && 'Memory'}
+                    {activeTab === 'subscription' && 'Subscription'}
+                    {activeTab === 'refer' && 'Refer & Earn'}
+                    {activeTab === 'profile' && 'Profile'}
+                  </h3>
+                  <p className="text-xs text-neutral-500 mt-0.5">
+                    {activeTab === 'general' && 'Make AI Fiesta look the way you like.'}
+                    {activeTab === 'memory' && 'Manage what AI remembers about you across conversations.'}
+                    {activeTab === 'subscription' && 'Manage your plan, limits, and billing details.'}
+                    {activeTab === 'refer' && 'Invite friends to earn additional message credits.'}
+                    {activeTab === 'profile' && 'Manage your account details and display name.'}
+                  </p>
+                </div>
 
-            <button
-              type="button"
-              id="settings-close-btn"
-              onClick={onClose}
-              className="text-neutral-400 hover:text-neutral-800 p-1 rounded-lg transition-colors cursor-pointer -mt-1 -mr-1"
-              aria-label="Close settings"
-            >
-              <X className="w-5 h-5 stroke-[1.8]" />
-            </button>
-          </div>
+                <button
+                  type="button"
+                  id="settings-close-btn"
+                  onClick={onClose}
+                  className="text-neutral-400 hover:text-neutral-800 p-1 rounded-lg transition-colors cursor-pointer -mt-1 -mr-1"
+                  aria-label="Close settings"
+                >
+                  <X className="w-5 h-5 stroke-[1.8]" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto pr-1">
 
           {/* TAB CONTENT: General (Exact UI from user reference screenshot) */}
           {activeTab === 'general' && (
@@ -399,28 +404,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* TAB CONTENT: AI Preferences */}
-          {activeTab === 'preferences' && (
-            <div className="space-y-4 animate-in fade-in duration-150 text-xs text-neutral-700">
-              <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200/70 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-medium text-neutral-900 block">Stream reasoning tokens</span>
-                    <span className="text-neutral-500 text-[11px]">Display real-time chain-of-thought thought process</span>
-                  </div>
-                  <input type="checkbox" defaultChecked className="toggle-checkbox accent-emerald-600 cursor-pointer" />
-                </div>
-                <div className="border-t border-neutral-200/50 pt-3 flex items-center justify-between">
-                  <div>
-                    <span className="font-medium text-neutral-900 block">Auto-translate voice to English</span>
-                    <span className="text-neutral-500 text-[11px]">Automatically translate non-English audio inputs to English</span>
-                  </div>
-                  <input type="checkbox" defaultChecked className="toggle-checkbox accent-emerald-600 cursor-pointer" />
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* TAB CONTENT: Memory */}
           {activeTab === 'memory' && (
             <div className="space-y-4 animate-in fade-in duration-150 text-xs text-neutral-700">
@@ -514,6 +497,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
             </div>
+          )}
+              </div>
+            </>
           )}
         </div>
       </div>
