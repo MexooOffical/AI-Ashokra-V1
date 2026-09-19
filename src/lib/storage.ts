@@ -16,7 +16,18 @@ const STORAGE_KEYS = {
   AI_MODEL_PREFERENCES: 'ai_ashokra_model_preferences',
   MEMORY_SETTINGS: 'ai_ashokra_memory_settings',
   AUTH_SESSION: 'ai_ashokra_auth_session',
+  REGISTERED_USERS: 'ai_ashokra_registered_users',
 };
+
+export interface StoredUserAccount {
+  id: string;
+  email: string;
+  password?: string;
+  name: string;
+  phone?: string;
+  provider: 'google' | 'email';
+  createdAt: number;
+}
 
 export interface AuthSession {
   isLoggedIn: boolean;
@@ -32,6 +43,102 @@ export const DEFAULT_AUTH_SESSION: AuthSession = {
   name: '',
   phone: '',
 };
+
+// --- Local Storage User Accounts ---
+export function getStoredUsers(): StoredUserAccount[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.REGISTERED_USERS);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    console.warn('Failed to parse registered users:', err);
+    return [];
+  }
+}
+
+export function findStoredUserByEmail(email: string): StoredUserAccount | undefined {
+  const users = getStoredUsers();
+  return users.find((u) => u.email.trim().toLowerCase() === email.trim().toLowerCase());
+}
+
+export function registerStoredUser(user: {
+  email: string;
+  password?: string;
+  name?: string;
+  phone?: string;
+  provider?: 'google' | 'email';
+}): StoredUserAccount {
+  const users = getStoredUsers();
+  const normalizedEmail = user.email.trim().toLowerCase();
+  const existingIndex = users.findIndex(
+    (u) => u.email.trim().toLowerCase() === normalizedEmail
+  );
+
+  const displayName =
+    user.name?.trim() ||
+    normalizedEmail.split('@')[0].charAt(0).toUpperCase() +
+      normalizedEmail.split('@')[0].slice(1) ||
+    'User';
+
+  const account: StoredUserAccount = {
+    id: existingIndex >= 0 ? users[existingIndex].id : `usr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    email: normalizedEmail,
+    password: user.password || (existingIndex >= 0 ? users[existingIndex].password : ''),
+    name: displayName,
+    phone: user.phone || (existingIndex >= 0 ? users[existingIndex].phone : ''),
+    provider: user.provider || 'email',
+    createdAt: existingIndex >= 0 ? users[existingIndex].createdAt : Date.now(),
+  };
+
+  if (existingIndex >= 0) {
+    users[existingIndex] = account;
+  } else {
+    users.push(account);
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, JSON.stringify(users));
+    } catch (err) {
+      console.warn('Failed to save registered user:', err);
+    }
+  }
+
+  return account;
+}
+
+export function authenticateStoredUser(
+  email: string,
+  password?: string
+): { success: boolean; account?: StoredUserAccount; error?: string } {
+  const normalizedEmail = email.trim().toLowerCase();
+  const existing = findStoredUserByEmail(normalizedEmail);
+
+  if (!existing) {
+    // If no prior registered user, automatically register them locally for smooth onboarding
+    const newAccount = registerStoredUser({
+      email: normalizedEmail,
+      password: password || '',
+      provider: 'email',
+    });
+    return { success: true, account: newAccount };
+  }
+
+  // If user already has a saved password, check match
+  if (existing.password && password && existing.password !== password) {
+    return { success: false, error: 'Incorrect password for this account. Please try again.' };
+  }
+
+  // Update password if none was stored yet
+  if (!existing.password && password) {
+    existing.password = password;
+    registerStoredUser(existing);
+  }
+
+  return { success: true, account: existing };
+}
 
 export function getStoredAuthSession(): AuthSession {
   if (typeof window === 'undefined') return DEFAULT_AUTH_SESSION;

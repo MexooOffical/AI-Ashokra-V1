@@ -101,6 +101,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onUpdateUser,
   initialTab = 'general',
   onOpenUpgrade,
+  onOpenLogoutConfirm,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
   const [appearance, setAppearance] = useState<'system' | 'light' | 'dark'>('light');

@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { Database, Code2, Copy, Check, X, Shield } from 'lucide-react';
-import { saveStoredAuthSession } from '../../lib/storage';
-import { SUPABASE_SQL_EDITOR_SCHEMA } from '../../lib/supabase';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import {
+  saveStoredAuthSession,
+  registerStoredUser,
+  authenticateStoredUser,
+  saveStoredUserProfile,
+} from '../../lib/storage';
 
 interface AuthPageProps {
   onAuthSuccess: (session: {
@@ -15,86 +19,132 @@ interface AuthPageProps {
 export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('fitforlifevitthal@gmail.com');
-  const [password, setPassword] = useState('••••••••••');
+  const [password, setPassword] = useState('ashokra123');
   const [phone, setPhone] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
-  const [copiedSql, setCopiedSql] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    setErrorMessage('');
+
+    if (!email.trim()) {
+      setErrorMessage('Please enter your email address.');
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage('Please enter your password.');
+      return;
+    }
+
+    if (mode === 'signup' && password.length < 4) {
+      setErrorMessage('Password must be at least 4 characters.');
+      return;
+    }
 
     setIsLoading(true);
     setTimeout(() => {
-      const displayName = email.split('@')[0] || 'User';
-      const formattedName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+      const normalizedEmail = email.trim().toLowerCase();
+      const displayName =
+        normalizedEmail.split('@')[0].charAt(0).toUpperCase() +
+        normalizedEmail.split('@')[0].slice(1) || 'User';
 
-      const session = {
-        isLoggedIn: true,
-        email: email.trim(),
-        name: formattedName,
-        phone: phone.trim(),
-        provider: 'email' as const,
-      };
+      if (mode === 'signup') {
+        // Register locally in localStorage
+        const account = registerStoredUser({
+          email: normalizedEmail,
+          password,
+          name: displayName,
+          phone: phone.trim(),
+          provider: 'email',
+        });
 
-      saveStoredAuthSession(session);
-      setIsLoading(false);
-      onAuthSuccess(session);
-    }, 400);
+        const session = {
+          isLoggedIn: true,
+          email: account.email,
+          name: account.name,
+          phone: account.phone || '',
+          provider: 'email' as const,
+        };
+
+        saveStoredAuthSession(session);
+        saveStoredUserProfile({
+          name: account.name,
+          avatarLetter: account.name.charAt(0).toUpperCase(),
+        });
+
+        setIsLoading(false);
+        onAuthSuccess(session);
+      } else {
+        // Login with localStorage
+        const authResult = authenticateStoredUser(normalizedEmail, password);
+
+        if (!authResult.success) {
+          setIsLoading(false);
+          setErrorMessage(authResult.error || 'Invalid credentials. Please try again.');
+          return;
+        }
+
+        const account = authResult.account!;
+        const session = {
+          isLoggedIn: true,
+          email: account.email,
+          name: account.name,
+          phone: account.phone || '',
+          provider: 'email' as const,
+        };
+
+        saveStoredAuthSession(session);
+        saveStoredUserProfile({
+          name: account.name,
+          avatarLetter: account.name.charAt(0).toUpperCase(),
+        });
+
+        setIsLoading(false);
+        onAuthSuccess(session);
+      }
+    }, 350);
   };
 
   const handleGoogleSignIn = () => {
+    setErrorMessage('');
     setIsLoading(true);
     setTimeout(() => {
+      const defaultEmail = email.trim() || 'fitforlifevitthal@gmail.com';
+      const displayName =
+        defaultEmail.split('@')[0].charAt(0).toUpperCase() +
+        defaultEmail.split('@')[0].slice(1) || 'Vitthal';
+
+      const account = registerStoredUser({
+        email: defaultEmail,
+        name: displayName,
+        phone: phone.trim(),
+        provider: 'google',
+      });
+
       const session = {
         isLoggedIn: true,
-        email: 'fitforlifevitthal@gmail.com',
-        name: 'Vitthal',
-        phone: '',
+        email: account.email,
+        name: account.name,
+        phone: account.phone || '',
         provider: 'google' as const,
       };
+
       saveStoredAuthSession(session);
+      saveStoredUserProfile({
+        name: account.name,
+        avatarLetter: account.name.charAt(0).toUpperCase(),
+      });
+
       setIsLoading(false);
       onAuthSuccess(session);
-    }, 400);
-  };
-
-  const handleCopySql = () => {
-    navigator.clipboard?.writeText(SUPABASE_SQL_EDITOR_SCHEMA);
-    setCopiedSql(true);
-    setTimeout(() => setCopiedSql(false), 2000);
+    }, 350);
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#fdfdfe] sm:bg-[#fafbfc] flex flex-col justify-between items-center py-8 sm:py-12 px-4 sm:px-6 relative select-none">
-      {/* Top Bar with Supabase SQL Editor Helper */}
-      <div className="w-full max-w-4xl flex items-center justify-between px-2 shrink-0">
-        <div className="flex items-center gap-2">
-          <img
-            src="/assets/ai-ashokra-logo.png"
-            alt="AI Ashokra"
-            className="w-7 h-7 object-contain"
-            onError={(e) => {
-              const target = e.currentTarget;
-              target.style.display = 'none';
-            }}
-          />
-          <span className="font-semibold text-neutral-800 text-sm tracking-tight">
-            AI Ashokra
-          </span>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsSqlModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200/80 bg-white hover:bg-neutral-50 text-xs font-medium text-neutral-600 hover:text-neutral-900 transition-colors shadow-2xs cursor-pointer"
-        >
-          <Database className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Supabase SQL Setup</span>
-        </button>
-      </div>
-
+    <div className="min-h-screen w-full bg-[#fdfdfe] sm:bg-[#fafbfc] flex flex-col justify-center items-center py-10 sm:py-14 px-4 sm:px-6 relative select-none">
       {/* Main Center Auth Container */}
       <div className="w-full max-w-[480px] my-auto flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
         {/* Colorful AI Ashokra Spiral Logo */}
@@ -125,10 +175,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
 
         {/* Subtitle */}
         <p className="text-sm sm:text-[15px] text-neutral-500 text-center mb-7 sm:mb-8 font-normal">
-          Choose how you would like to sign in
+          {mode === 'login'
+            ? 'Choose how you would like to sign in'
+            : 'Create your local storage account'}
         </p>
 
-        {/* Continue with Google Button (Exact match to Image 2 & 3) */}
+        {/* Continue with Google Button */}
         <button
           type="button"
           id="auth-google-btn"
@@ -136,7 +188,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
           disabled={isLoading}
           className="w-full py-3.5 sm:py-4 px-6 rounded-full bg-[#1c1f26] hover:bg-[#111317] active:scale-[0.99] text-white font-semibold text-sm sm:text-base flex items-center justify-center gap-3 transition-all shadow-xs cursor-pointer mb-7"
         >
-          {/* Google G Logo matching the screenshot */}
+          {/* Google G Logo */}
           <span className="w-5 h-5 flex items-center justify-center font-bold text-blue-400 text-base leading-none">
             G
           </span>
@@ -151,6 +203,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
           </span>
           <div className="flex-grow border-t border-neutral-200/90" />
         </div>
+
+        {/* Error Notification Banner */}
+        {errorMessage && (
+          <div className="w-full mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-2.5 text-xs text-red-700 animate-in fade-in duration-150">
+            <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="w-full flex flex-col">
@@ -167,7 +227,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errorMessage) setErrorMessage('');
+              }}
               placeholder="name@example.com"
               className="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-[#edf3ff] border-2 border-transparent focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 text-[15px] sm:text-base text-neutral-900 placeholder:text-neutral-400 transition-all"
             />
@@ -175,31 +238,55 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
 
           {/* Password */}
           <div className={mode === 'signup' ? 'mb-4' : 'mb-6'}>
-            <label
-              htmlFor="auth-password-input"
-              className="block text-xs sm:text-[13.5px] font-semibold text-neutral-900 mb-2"
-            >
-              Password
-            </label>
-            <input
-              id="auth-password-input"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••"
-              className="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-[#edf3ff] border-2 border-transparent focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 text-[15px] sm:text-base text-neutral-900 placeholder:text-neutral-400 transition-all"
-            />
+            <div className="flex items-center justify-between mb-2">
+              <label
+                htmlFor="auth-password-input"
+                className="block text-xs sm:text-[13.5px] font-semibold text-neutral-900"
+              >
+                Password
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-xs text-neutral-500 hover:text-neutral-800 inline-flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                {showPassword ? (
+                  <>
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>Hide</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Show</span>
+                  </>
+                )}
+              </button>
+            </div>
+            <div className="relative">
+              <input
+                id="auth-password-input"
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errorMessage) setErrorMessage('');
+                }}
+                placeholder="Enter your password"
+                className="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-[#edf3ff] border-2 border-transparent focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 text-[15px] sm:text-base text-neutral-900 placeholder:text-neutral-400 transition-all"
+              />
+            </div>
           </div>
 
-          {/* Phone Number Field (Only present in Sign Up mode - Image 3) */}
+          {/* Phone Number Field (Only present in Sign Up mode) */}
           {mode === 'signup' && (
             <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-150">
               <label
                 htmlFor="auth-phone-input"
                 className="block text-xs sm:text-[13.5px] font-semibold text-neutral-900 mb-2"
               >
-                Phone Number
+                Phone Number (Optional)
               </label>
               <input
                 id="auth-phone-input"
@@ -217,7 +304,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
             <button
               type="submit"
               id="auth-login-submit-btn"
-              disabled={isLoading || !email.trim()}
+              disabled={isLoading || !email.trim() || !password}
               className="w-full py-4 px-6 rounded-full bg-[#1c1f26] hover:bg-black active:scale-[0.99] text-white font-semibold text-sm sm:text-base transition-all shadow-xs cursor-pointer mb-5 disabled:opacity-50"
             >
               {isLoading ? 'Signing in...' : 'Log in'}
@@ -226,9 +313,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
             <button
               type="submit"
               id="auth-signup-submit-btn"
-              disabled={isLoading || !email.trim()}
+              disabled={isLoading || !email.trim() || !password}
               className={`w-full py-4 px-6 rounded-full font-semibold text-sm sm:text-base transition-all shadow-xs cursor-pointer mb-5 active:scale-[0.99] ${
-                phone.trim()
+                email.trim() && password
                   ? 'bg-[#1c1f26] hover:bg-black text-white'
                   : 'bg-[#d7dce5] hover:bg-[#cbd2dc] text-[#8c96a6]'
               }`}
@@ -243,7 +330,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
               <button
                 type="button"
                 id="switch-to-signup-btn"
-                onClick={() => setMode('signup')}
+                onClick={() => {
+                  setMode('signup');
+                  setErrorMessage('');
+                }}
                 className="text-xs sm:text-[13.5px] text-neutral-700 hover:text-neutral-950 underline underline-offset-4 font-medium cursor-pointer transition-colors"
               >
                 Create a new account
@@ -252,7 +342,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
               <button
                 type="button"
                 id="switch-to-login-btn"
-                onClick={() => setMode('login')}
+                onClick={() => {
+                  setMode('login');
+                  setErrorMessage('');
+                }}
                 className="text-xs sm:text-[13.5px] text-neutral-700 hover:text-neutral-950 underline underline-offset-4 font-medium cursor-pointer transition-colors"
               >
                 Already have an account? Log in
@@ -282,90 +375,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
           .
         </p>
       </div>
-
-      {/* Supabase SQL Editor Setup Modal */}
-      {isSqlModalOpen && (
-        <div
-          id="supabase-sql-modal-backdrop"
-          className="fixed inset-0 z-70 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setIsSqlModalOpen(false);
-          }}
-        >
-          <div
-            id="supabase-sql-modal-card"
-            className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative flex flex-col max-h-[90vh] border border-neutral-100"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <Database className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-neutral-900">
-                    Supabase SQL Editor Ready Script
-                  </h3>
-                  <p className="text-xs text-neutral-500">
-                    Run this query in your Supabase SQL Editor to support email, phone, and user profiles.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsSqlModalOpen(false)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-hidden flex flex-col my-2">
-              <div className="flex items-center justify-between pb-2">
-                <span className="text-xs font-semibold text-neutral-700 flex items-center gap-1.5">
-                  <Code2 className="w-4 h-4 text-neutral-500" />
-                  PostgreSQL Schema (`public.profiles`)
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCopySql}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-neutral-900 hover:bg-black text-white text-xs font-medium transition-colors cursor-pointer"
-                >
-                  {copiedSql ? (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copy SQL</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <pre className="flex-1 overflow-y-auto bg-neutral-900 text-neutral-100 text-xs p-4 rounded-2xl font-mono leading-relaxed select-all">
-                {SUPABASE_SQL_EDITOR_SCHEMA}
-              </pre>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-xs text-neutral-500">
-              <div className="flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-emerald-500" />
-                <span>Includes Row Level Security (RLS) and automatic auth trigger.</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsSqlModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-medium cursor-pointer transition-colors"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Bottom Subtle copyright spacer */}
       <div className="h-4 shrink-0" />
